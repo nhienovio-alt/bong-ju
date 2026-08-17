@@ -26,3 +26,33 @@ client.login(process.env.DISCORD_TOKEN).catch(error => {
 process.on('unhandledRejection', error => {
   console.error('Unhandled promise rejection:', error);
 });
+const { Client, GatewayIntentBits } = require('discord.js');
+const http = require('http');
+
+// 1. Tạo web server đơn giản để Render kiểm tra (health check)
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Bot is running!');
+});
+
+// Render sẽ tự động cấp cổng qua process.env.PORT, mặc định dùng 3000 nếu chạy local
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Web server listening on port ${PORT}`);
+});
+
+// 2. Mã nguồn khởi chạy Discord Bot của bạn
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ],
+});
+
+client.once('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+});
+
+// Đăng nhập bằng TOKEN lưu trong Environment Variables của Render
+client.login(process.env.DISCORD_TOKEN);
